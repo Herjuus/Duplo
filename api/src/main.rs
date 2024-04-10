@@ -1,10 +1,10 @@
 pub mod error;
 
-use axum::{Router, routing::get, http::{StatusCode, uri}, debug_handler};
+use axum::{Router, routing::get, http::{StatusCode, uri}, debug_handler, response::{IntoResponse, Response}, body::{HttpBody, Body}, Json};
 use error::ApiError;
 use k8s_openapi::{api::apps::v1::{Deployment, DeploymentStatus}};
 use kube::{Client, Api, ResourceExt, Config, core::object};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use http::Uri;
 
 #[tokio::main]
@@ -22,7 +22,7 @@ async fn main() {
 }
 
 #[debug_handler]
-pub async fn get_deployments() -> Result<(StatusCode, Vec<DeploymentStruct>), ApiError> {
+pub async fn get_deployments() -> Result<(StatusCode, Json<Vec<DeploymentStruct>>), ApiError> {
     let client = Client::try_default().await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() })?;
 
     let deployments: Api<Deployment> = Api::all(client);
@@ -33,9 +33,9 @@ pub async fn get_deployments() -> Result<(StatusCode, Vec<DeploymentStruct>), Ap
         let metadata = deployment.metadata;
         let name = metadata.name.unwrap();
 
-//        let spec = deployment.spec.unwrap();
-//        let image = spec.template.spec.unwrap().containers[0].image.unwrap();
-//        let port = spec.template.spec.unwrap().containers[0];
+        //        let spec = deployment.spec.unwrap();
+        //        let image = spec.template.spec.unwrap().containers[0].image.unwrap();
+        //        let port = spec.template.spec.unwrap().containers[0];
 
         let object = DeploymentStruct {
             name
@@ -44,7 +44,7 @@ pub async fn get_deployments() -> Result<(StatusCode, Vec<DeploymentStruct>), Ap
         deployment_object_list.push(object)
     };
 
-    Ok((StatusCode::OK, deployment_object_list))
+    Ok((StatusCode::OK, Json(deployment_object_list)))
 }
 
 #[derive(Serialize)]
