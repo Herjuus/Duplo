@@ -2,7 +2,7 @@ pub mod error;
 
 use axum::{Router, routing::get, http::{StatusCode, uri}, debug_handler};
 use error::ApiError;
-use k8s_openapi::api::apps::v1::Deployment;
+use k8s_openapi::{api::apps::v1::Deployment};
 use kube::{Client, Api, ResourceExt, Config};
 use serde::Serialize;
 use http::Uri;
@@ -21,19 +21,17 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
+#[debug_handler]
 pub async fn get_deployments() -> Result<(StatusCode, String), ApiError> {
     let client = Client::try_default().await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() })?;
 
     let deployments: Api<Deployment> = Api::all(client);
-    let deployment_list = deployments.list(&Default::default()).await?;
+    let deployment_list = deployments.list(&Default::default()).await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() })?;
 
-    let mut deployment_names = Vec::new();
+    let mut deployment_names: Vec<String> = Vec::new();
     for deployment in deployment_list {
-        if let Some(metadata) = deployment.metadata {
-            if let Some(name) = metadata.name {
-                deployment_names.push(name);
-            }
-        }
+        let metadata = deployment.metadata;
+        println!("{:?}", metadata.name)
     }
 
     Ok((StatusCode::OK, "test".to_string()))
