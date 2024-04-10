@@ -25,7 +25,7 @@ async fn main() {
 pub async fn get_deployments() -> Result<(StatusCode, Json<Vec<DeploymentStruct>>), ApiError> {
     let client = Client::try_default().await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() })?;
 
-    let deployments: Api<Deployment> = Api::all(client);
+    let deployments: Api<Deployment> = Api::default_namespaced(client);
     let deployment_list = deployments.list(&Default::default()).await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() })?;
 
     let mut deployment_object_list: Vec<DeploymentStruct> = Vec::new();
