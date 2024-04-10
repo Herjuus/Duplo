@@ -24,11 +24,17 @@ async fn main() {
 pub async fn get_deployments() -> Result<(StatusCode, String), ApiError> {
     let client = Client::try_default().await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() })?;
 
-//    let pods: Api<Pod> = Api::all(client);
-//    let pod = pods.get("nginx-deployment-7c5ddbdf54-g8rkr").await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() } )?;
-
     let deployments: Api<Deployment> = Api::all(client);
-    let deployment = deployments.get("nginx-deployment").await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() } )?;
+    let deployment_list = deployments.list(&Default::default()).await?;
+
+    let mut deployment_names = Vec::new();
+    for deployment in deployment_list {
+        if let Some(metadata) = deployment.metadata {
+            if let Some(name) = metadata.name {
+                deployment_names.push(name);
+            }
+        }
+    }
 
     Ok((StatusCode::OK, "test".to_string()))
 }
