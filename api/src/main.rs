@@ -1,11 +1,10 @@
 pub mod error;
 
-use axum::{Router, routing::get, http::{StatusCode, uri}, debug_handler, response::{IntoResponse, Response}, body::{HttpBody, Body}, Json};
+use axum::{Router, routing::get, http::{StatusCode}, debug_handler, Json};
 use error::ApiError;
-use k8s_openapi::{api::apps::v1::{Deployment, DeploymentStatus}};
-use kube::{Client, Api, ResourceExt, Config, core::object};
-use serde::{Serialize, Deserialize};
-use http::Uri;
+use k8s_openapi::{api::apps::v1::{Deployment}};
+use kube::{Client, Api};
+use serde::{Serialize};
 
 #[tokio::main]
 async fn main() {
@@ -36,10 +35,16 @@ pub async fn get_deployments() -> Result<(StatusCode, Json<Vec<DeploymentStruct>
         let spec = deployment.spec.unwrap();
         let container = spec.template.spec.unwrap().containers[0].to_owned();
         let image = container.image.unwrap();
-//        let port = spec.template.spec.unwrap().containers[0].ports[0].into()?;
+
+        let mut port: i32 = 0;
+
+        let ports = container.ports.unwrap();
+        for container_port in ports {
+            port = container_port.container_port
+        }
 
         let object = DeploymentStruct {
-            name, image
+            name, image, port,
         };
 
         deployment_object_list.push(object)
@@ -52,7 +57,7 @@ pub async fn get_deployments() -> Result<(StatusCode, Json<Vec<DeploymentStruct>
 pub struct DeploymentStruct {
     name: String,
     image: String,
-//    port: i64,
+    port: i32,
 }
 
 //struct Ingress {
