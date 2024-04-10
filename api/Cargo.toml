@@ -7,9 +7,10 @@ edition = "2021"
 
 [dependencies]
 axum = { version = "0.7.5", features = ["macros", "json", "http1", "http2", "default"] }
-kube = "0.90.0"
-k8s-openapi = { version = "0.21.1", features = ["latest"] }
+kube = "0.88.0"
+k8s-openapi = { version = "0.21.0", features = ["latest"] }
 serde = "1.0.197"
 serde_json = "1.0.115"
 sqlx = "0.7.4"
 tokio = { version = "1.37.0", features = ["full"] }
+http = "1.1.0"
