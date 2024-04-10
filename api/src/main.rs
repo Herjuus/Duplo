@@ -2,8 +2,8 @@ pub mod error;
 
 use axum::{Router, routing::get, http::{StatusCode, uri}, debug_handler};
 use error::ApiError;
-use k8s_openapi::{api::apps::v1::Deployment};
-use kube::{Client, Api, ResourceExt, Config};
+use k8s_openapi::{api::apps::v1::{Deployment, DeploymentStatus}};
+use kube::{Client, Api, ResourceExt, Config, core::object};
 use serde::Serialize;
 use http::Uri;
 
@@ -22,27 +22,37 @@ async fn main() {
 }
 
 #[debug_handler]
-pub async fn get_deployments() -> Result<(StatusCode, String), ApiError> {
+pub async fn get_deployments() -> Result<(StatusCode, Vec<DeploymentStruct>), ApiError> {
     let client = Client::try_default().await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() })?;
 
     let deployments: Api<Deployment> = Api::all(client);
     let deployment_list = deployments.list(&Default::default()).await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() })?;
 
-    let mut deployment_names: Vec<String> = Vec::new();
-    for deployment in deployment_list {
+    let mut deployment_object_list: Vec<DeploymentStruct> = Vec::new();
+    let var_name = for deployment in deployment_list {
         let metadata = deployment.metadata;
-        println!("{:?}", metadata.name)
-    }
+        let name = metadata.name.unwrap();
 
-    Ok((StatusCode::OK, "test".to_string()))
+//        let spec = deployment.spec.unwrap();
+//        let image = spec.template.spec.unwrap().containers[0].image.unwrap();
+//        let port = spec.template.spec.unwrap().containers[0];
+
+        let object = DeploymentStruct {
+            name
+        };
+
+        deployment_object_list.push(object)
+    };
+
+    Ok((StatusCode::OK, deployment_object_list))
 }
 
-//#[derive(Serialize)]
-//struct Deployment {
-//    name: String,
+#[derive(Serialize)]
+struct DeploymentStruct {
+    name: String,
 //    image: String,
-//    port: String,
-//}
+//    port: i64,
+}
 
 //struct Ingress {
 //    name: String,
