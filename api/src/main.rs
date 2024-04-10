@@ -1,6 +1,6 @@
-use std::fmt::Result;
-
 use axum::{Router, routing::get, http::StatusCode};
+use k8s_openapi::api::core::v1::Pod;
+use kube::{Client, Api};
 use serde::Serialize;
 
 #[tokio::main]
@@ -16,8 +16,13 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn get_deployments() -> Result<(StatusCode, vec![Deployment]), StatusCode> {
+async fn get_deployments() -> Result<(StatusCode, Pod), StatusCode> {
+    let client = Client::try_default().await.map_err(|_e| StatusCode::FORBIDDEN)?;
 
+    let pods: Api<Pod> = Api::all(client);
+    let pod = pods.get("nginx-deployment-7c5ddbdf54-g8rkr").await.map_err(|_e| StatusCode::FORBIDDEN)?;
+
+    Ok((StatusCode::OK, pod))
 }
 
 #[derive(Serialize)]
@@ -27,7 +32,7 @@ struct Deployment {
     port: String,
 }
 
-struct Ingress {
-    name: String,
-    hosts: vec![String],
-}
+//struct Ingress {
+//    name: String,
+//    hosts: vec![String],
+//}
