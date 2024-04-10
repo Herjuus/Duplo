@@ -27,8 +27,8 @@ pub async fn get_deployments() -> Result<(StatusCode, String), ApiError> {
 //    let pods: Api<Pod> = Api::all(client);
 //    let pod = pods.get("nginx-deployment-7c5ddbdf54-g8rkr").await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() } )?;
 
-//    let deployments: Api<Deployment> = Api::default_namespaced(client);
-//    let deployment = deployments.get("nginx-deployment").await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() } )?;
+    let deployments: Api<Deployment> = Api::all(client);
+    let deployment = deployments.get("nginx-deployment").await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() } )?;
 
     Ok((StatusCode::OK, "test".to_string()))
 }
