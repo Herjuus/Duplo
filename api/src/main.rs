@@ -10,7 +10,7 @@ use serde::{Serialize};
 async fn main() {
     let app = Router::new()
         .route("/", get("Hello World"))
-        .route("/pods", get(get_deployments));
+        .route("/deployments", get(get_deployments));
     
     let listener = tokio::net::TcpListener::bind("127.0.0.1:8080")
         .await
@@ -36,12 +36,12 @@ pub async fn get_deployments() -> Result<(StatusCode, Json<Vec<DeploymentStruct>
         let container = spec.template.spec.unwrap().containers[0].to_owned();
         let image = container.image.unwrap();
 
-        let mut port: i32 = 0;
+        let port: i32 = container.ports.unwrap()[0].container_port;
 
-        let ports = container.ports.unwrap();
-        for container_port in ports {
-            port = container_port.container_port
-        }
+//        let ports = container.ports.unwrap();
+//        for container_port in ports {
+//            port = container_port.container_port
+//        }
 
         let object = DeploymentStruct {
             name, image, port,
@@ -59,8 +59,3 @@ pub struct DeploymentStruct {
     image: String,
     port: i32,
 }
-
-//struct Ingress {
-//    name: String,
-//    hosts: vec![String],
-//}
