@@ -1,4 +1,7 @@
-use axum::{Router, routing::get};
+use std::fmt::Result;
+
+use axum::{Router, routing::get, http::StatusCode};
+use serde::Serialize;
 
 #[tokio::main]
 async fn main() {
@@ -11,4 +14,20 @@ async fn main() {
     
     println!("listening on {}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
+}
+
+async fn get_deployments() -> Result<(StatusCode, vec![Deployment]), StatusCode> {
+
+}
+
+#[derive(Serialize)]
+struct Deployment {
+    name: String,
+    image: String,
+    port: String,
+}
+
+struct Ingress {
+    name: String,
+    hosts: vec![String],
 }
