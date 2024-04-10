@@ -29,16 +29,17 @@ pub async fn get_deployments() -> Result<(StatusCode, Json<Vec<DeploymentStruct>
     let deployment_list = deployments.list(&Default::default()).await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() })?;
 
     let mut deployment_object_list: Vec<DeploymentStruct> = Vec::new();
-    let var_name = for deployment in deployment_list {
+    let _var_name = for deployment in deployment_list {
         let metadata = deployment.metadata;
         let name = metadata.name.unwrap();
 
         let spec = deployment.spec.unwrap();
-//        let image = spec.template.spec.unwrap().containers[0].image.unwrap().as_ref();
+        let container = spec.template.spec.unwrap().containers[0].to_owned();
+        let image = container.image.unwrap();
 //        let port = spec.template.spec.unwrap().containers[0].ports[0].into()?;
 
         let object = DeploymentStruct {
-            name
+            name, image
         };
 
         deployment_object_list.push(object)
@@ -48,9 +49,9 @@ pub async fn get_deployments() -> Result<(StatusCode, Json<Vec<DeploymentStruct>
 }
 
 #[derive(Serialize)]
-struct DeploymentStruct {
+pub struct DeploymentStruct {
     name: String,
-//    image: String,
+    image: String,
 //    port: i64,
 }
 
