@@ -33,12 +33,12 @@ pub async fn get_deployments() -> Result<(StatusCode, Json<Vec<DeploymentStruct>
         let metadata = deployment.metadata;
         let name = metadata.name.unwrap();
 
-        //        let spec = deployment.spec.unwrap();
-        //        let image = spec.template.spec.unwrap().containers[0].image.unwrap();
-        //        let port = spec.template.spec.unwrap().containers[0];
+        let spec = deployment.spec.unwrap();
+        let image = spec.template.spec.unwrap().containers[0].image.unwrap();
+//        let port = spec.template.spec.unwrap().containers[0].ports[0].into()?;
 
         let object = DeploymentStruct {
-            name
+            name, image
         };
 
         deployment_object_list.push(object)
@@ -50,7 +50,7 @@ pub async fn get_deployments() -> Result<(StatusCode, Json<Vec<DeploymentStruct>
 #[derive(Serialize)]
 struct DeploymentStruct {
     name: String,
-//    image: String,
+    image: String,
 //    port: i64,
 }
 
