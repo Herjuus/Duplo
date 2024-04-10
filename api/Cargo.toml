@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = "0.7.5"
+axum = { version = "0.7.5", features = ["macros", "json", "http1", "http2", "default"] }
 kube = "0.90.0"
 k8s-openapi = { version = "0.21.1", features = ["latest"] }
 serde = "1.0.197"

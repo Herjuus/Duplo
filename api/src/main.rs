@@ -1,6 +1,9 @@
-use axum::{Router, routing::get, http::StatusCode};
-use k8s_openapi::api::core::v1::Pod;
-use kube::{Client, Api};
+pub mod error;
+
+use axum::{Router, routing::get, http::StatusCode, debug_handler};
+use error::ApiError;
+use k8s_openapi::api::apps::v1::Deployment;
+use kube::{Client, Api, ResourceExt};
 use serde::Serialize;
 
 #[tokio::main]
@@ -17,21 +20,24 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn get_deployments() -> Result<(StatusCode, Pod), StatusCode> {
-    let client = Client::try_default().await.map_err(|_e| StatusCode::FORBIDDEN)?;
+pub async fn get_deployments() -> Result<(StatusCode, String), ApiError> {
+    let client = Client::try_default().await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() })?;
 
-    let pods: Api<Pod> = Api::all(client);
-    let pod = pods.get("nginx-deployment-7c5ddbdf54-g8rkr").await.map_err(|_e| StatusCode::FORBIDDEN)?;
+//    let pods: Api<Pod> = Api::all(client);
+//    let pod = pods.get("nginx-deployment-7c5ddbdf54-g8rkr").await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() } )?;
 
-    Ok((StatusCode::OK, pod))
+    let deployments: Api<Deployment> = Api::all(client);
+    let deployment = deployments.get("nginx-deployment").await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() } )?;
+
+    Ok((StatusCode::OK, deployment.name_any()))
 }
 
-#[derive(Serialize)]
-struct Deployment {
-    name: String,
-    image: String,
-    port: String,
-}
+//#[derive(Serialize)]
+//struct Deployment {
+//    name: String,
+//    image: String,
+//    port: String,
+//}
 
 //struct Ingress {
 //    name: String,
