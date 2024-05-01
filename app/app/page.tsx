@@ -10,12 +10,12 @@ type Deployment = {
 }
 
 async function getDeployments() {
-  let res = await axios.get<Deployment[]>("http://localhost:8080");
+  let res = await axios.get<Deployment[]>("http://localhost:8080/apps");
   return res.data;
 }
 
 export default async function Home() {
-  const deployments = await getDeployments();
+  const deployments = await getDeployments() || null;
 
   return (
     <main className="flex-1 w-full flex flex-col">
