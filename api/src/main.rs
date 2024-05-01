@@ -1,16 +1,16 @@
 pub mod error;
 
-use axum::{Router, routing::get, http::{StatusCode}, debug_handler, Json};
+use axum::{Router, routing::get, http::StatusCode, debug_handler, Json};
 use error::ApiError;
-use k8s_openapi::{api::apps::v1::{Deployment}};
+use k8s_openapi::api::apps::v1::Deployment;
 use kube::{Client, Api};
-use serde::{Serialize};
+use serde::Serialize;
 
 #[tokio::main]
 async fn main() {
     let app = Router::new()
         .route("/", get("Hello World"))
-        .route("/deployments", get(get_deployments));
+        .route("/apps", get(get_apps));
     
     let listener = tokio::net::TcpListener::bind("127.0.0.1:8080")
         .await
@@ -21,7 +21,7 @@ async fn main() {
 }
 
 #[debug_handler]
-pub async fn get_deployments() -> Result<(StatusCode, Json<Vec<DeploymentStruct>>), ApiError> {
+pub async fn get_apps() -> Result<(StatusCode, Json<Vec<DeploymentStruct>>), ApiError> {
     let client = Client::try_default().await.map_err(|err| ApiError { status_code: StatusCode::FORBIDDEN, message: err.to_string() })?;
 
     let deployments: Api<Deployment> = Api::default_namespaced(client);
@@ -37,11 +37,6 @@ pub async fn get_deployments() -> Result<(StatusCode, Json<Vec<DeploymentStruct>
         let image = container.image.unwrap();
 
         let port: i32 = container.ports.unwrap()[0].container_port;
-
-//        let ports = container.ports.unwrap();
-//        for container_port in ports {
-//            port = container_port.container_port
-//        }
 
         let object = DeploymentStruct {
             name, image, port,
