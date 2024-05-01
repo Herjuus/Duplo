@@ -10,7 +10,7 @@ type Deployment = {
 }
 
 async function getDeployments() {
-  let res = await axios.get<Deployment[]>("http://localhost:8080/apps");
+  let res = await axios.get<Deployment[]>("http://127.0.0.1:8080/apps");
   return res.data;
 }
 
